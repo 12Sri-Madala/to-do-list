@@ -11,7 +11,7 @@ import { randomString } from '../helpers';
 console.log('Random String: ', randomString(20))
 
 const BASE_URL = 'http://api.reactprototypes.com/todos';
-const API_KEY = '?key=c718_demouser';
+const API_KEY = '?key=c918_demouser';
 
 class App extends Component {
     constructor(props){
@@ -23,22 +23,33 @@ class App extends Component {
         }
     }
 
-    deleteItem = (index) => {
-        const listCopy = this.state.list.slice();
+    deleteItem = async (id) => {
+        console.log('Delete item with ID: ', id);
 
-        listCopy.splice(index, 1);
+        await axios.delete(`${BASE_URL}/${id + API_KEY}`)
+        this.getListData();
+        
+        // const listCopy = this.state.list.slice();
 
-        this.setState({
-            list: listCopy
-        })
+        // listCopy.splice(index, 1);
+
+        // this.setState({
+        //     list: listCopy
+        // })
     }
 
-    addItem = (item) => {
-        item._id = randomString(8);
+    addItem = async (item) => {
+        await axios.post(BASE_URL + API_KEY, item);
 
-        this.setState({
-            list: [item, ...this.state.list]
-        })
+        this.getListData();
+
+        // console.log('Add Item Resp: ', resp)
+
+        // item._id = randomString(8);
+
+        // this.setState({
+        //     list: [item, ...this.state.list]
+        // })
     }
 
     componentDidMount(){
@@ -48,9 +59,20 @@ class App extends Component {
     async getListData(){
         // Call server to get data
         // http://api.reactprototypes.com/todos?key=c718_demouser
+        try {
+            const resp = await axios.get(BASE_URL + API_KEY);
 
-        const resp = await axios.get(BASE_URL + API_KEY);
+            this.setState({
+                list: resp.data.todos
+            });
+        } catch(err){
+            console.log('Error: ', err.message);
 
+            this.setState({
+                error: 'Error getting todos'
+            });
+        }
+        
         console.log('Resp: ', resp)
 
         // axios.get(BASE_URL + API_KEY).then((resp) => {
@@ -71,7 +93,8 @@ class App extends Component {
     }
 
     render(){
-        const { error } = this.state;
+        const { error, list } = this.state;
+        console.log()
 
         return (
             <div className ="container">
